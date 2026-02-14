@@ -13,28 +13,29 @@ mkdir -p "$log_path"
 
 # Remove the spinner/progress bar and add timestamp to each output line
 function exec_cmd() {
-  local tmp_out
-  tmp_out=$(mktemp)
+#  local tmp_out
+#  tmp_out=$(mktemp)
 
   # Run the command and capture output + exit code
-  if "$@" > "$tmp_out" 2>&1; then
-    exit_code=0
-  else
-    exit_code=$?
-  fi
+#  if "$@" > "$tmp_out" 2>&1; then
+#    exit_code=0
+#  else
+#    exit_code=$?
+#  fi
 
   # If the output is empty and command succeeded, write a warning into the file
-  if [[ ! -s "$tmp_out" && $exit_code -eq 0 ]]; then
-    echo "[WARN] Command succeeded but produced no output" >> "$tmp_out"
-  fi
+#  if [[ ! -s "$tmp_out" && $exit_code -eq 0 ]]; then
+#    echo "[WARN] Command succeeded but produced no output" >> "$tmp_out"
+#  fi
 
-  grep -vP '^\s+[\-\\|\/]+[\s]+$|▒▒|\.\.\.\.\.\.\.\.\.\.' "$tmp_out" \
+#  grep -vP '^\s+[\-\\|\/]+[\s]+$|▒▒|\.\.\.\.\.\.\.\.\.\.' "$tmp_out" \
+  "$@" | grep -vP '^\s+[\-\\|\/]+[\s]+$|▒▒|\.\.\.\.\.\.\.\.\.\.' \
     | sed -E 's.[[:space:]]*[-\\\/\|]+[[:space:]]+..g' \
     | awk '{print strftime("[%Y-%m-%d %H:%M:%S]"), $0 }' \
     | tee -a "$log_file"
 
-  rm -f "$tmp_out"
-  return $exit_code
+#  rm -f "$tmp_out"
+  return $?
 }
 
 function print() {
@@ -52,7 +53,7 @@ log_and_exec_cmd winget upgrade -r --accept-package-agreements --accept-source-a
 print "Upgrade Completed."
 
 # Purge logs older than 30 days
-log_and_exec_cmd find "$log_path" -type f -name '*.log' -mtime +30 -exec rm -f {} +
+find "$log_path" -type f -name '*.log' -mtime +30 -exec rm -f {} +
 
 print "Purged all available logs older than 30 days."
 
